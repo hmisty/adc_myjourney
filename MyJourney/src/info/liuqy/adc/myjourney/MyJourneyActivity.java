@@ -42,7 +42,6 @@ public class MyJourneyActivity extends MapActivity {
         mapOverlays.add(myLocationOverlay);
 
         mapCtrl = mapView.getController();
-        mapCtrl.setZoom(15); //FIXME magic number
     }
 
 	@Override
@@ -61,7 +60,9 @@ public class MyJourneyActivity extends MapActivity {
         myLocationOverlay.enableCompass();
         myLocationOverlay.runOnFirstFix(new Runnable() {
             public void run() {
-                mapView.getController().animateTo(myLocationOverlay.getMyLocation());
+                mapCtrl.animateTo(myLocationOverlay.getMyLocation());
+                mapCtrl.setZoom(15); //FIXME magic number
+                fpOverlay.loadSavedMarkers(mapView);
             }
         });
 	}
