@@ -148,6 +148,29 @@ public class MyJourneyActivity extends MapActivity {
                //TODO Image capture failed, advise user
            }
        }
+       
+       if (requestCode == REQUEST_RECORD_VIDEO) {
+           if (resultCode == RESULT_OK) {
+               // Image captured and saved to fileUri specified in the Intent
+               Toast.makeText(this, "Video saved to:\n" +
+                        data.getData(), Toast.LENGTH_LONG).show();
+               Location loc = this.myLocationOverlay.getLastFix();
+               if (loc != null) {
+                   double lat0 = loc.getLatitude();
+                   double long0 = loc.getLongitude();
+                   Footprints db = new Footprints(this);
+                   db.open();
+                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.V, data.getData().toString());
+                   db.close();
+                   this.fpOverlay.loadSavedMarkers(mapView); //reload markers
+               }
+           } else if (resultCode == RESULT_CANCELED) {
+               //TODO User cancelled the video capture
+           } else {
+               //TODO Video capture failed, advise user
+           }
+       }
+
    }
 
 }
