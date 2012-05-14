@@ -19,7 +19,8 @@ public class MyJourneyActivity extends MapActivity {
     LocationListener locationListener;
     List<Overlay> mapOverlays;
     MyLocationOverlay myLocationOverlay;
-
+    FootprintOverlay fpOverlay;
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
