@@ -74,6 +74,8 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
 		
         myLocationOverlay.disableMyLocation();
         myLocationOverlay.disableCompass();
+        
+        sensorMgr.unregisterListener(this);
 	}
 
 	@Override
@@ -89,6 +91,8 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                 fpOverlay.loadSavedMarkers(mapView);
             }
         });
+        
+        sensorMgr.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
