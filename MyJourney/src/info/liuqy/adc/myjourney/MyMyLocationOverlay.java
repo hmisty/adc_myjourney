@@ -9,10 +9,10 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 
 public class MyMyLocationOverlay extends MyLocationOverlay {
-	private Context context;
-	private MapView mapView;
+    private MyJourneyActivity context;
+    private MapView mapView;
 
-	public MyMyLocationOverlay(Context context, MapView mapView) {
+	public MyMyLocationOverlay(MyJourneyActivity context, MapView mapView) {
 		super(context, mapView);
 
 		this.context = context;
