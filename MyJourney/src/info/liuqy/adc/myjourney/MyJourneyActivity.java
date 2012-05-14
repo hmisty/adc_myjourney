@@ -2,6 +2,7 @@ package info.liuqy.adc.myjourney;
 
 import java.util.List;
 
+import android.graphics.drawable.Drawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -31,6 +32,12 @@ public class MyJourneyActivity extends MapActivity {
         mapView.setBuiltInZoomControls(true);
 
         mapOverlays = mapView.getOverlays();
+
+        Drawable defaultMarker = this.getResources().getDrawable(R.drawable.flag_red);
+        fpOverlay = new FootprintOverlay(defaultMarker, this);
+        fpOverlay.loadSavedMarkers(mapView);
+        mapOverlays.add(fpOverlay);
+
         myLocationOverlay = new MyMyLocationOverlay(this, mapView);
         mapOverlays.add(myLocationOverlay);
 
