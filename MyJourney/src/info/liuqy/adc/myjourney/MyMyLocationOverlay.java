@@ -44,6 +44,7 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                    }
 		                    break;
 		                case 1: //take a photo
+		                	dialog.dismiss();
 		                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		                    Uri fileUri = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_IMAGE); // create a file to save the image
 		                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
