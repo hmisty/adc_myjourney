@@ -26,7 +26,8 @@ public class MyJourneyActivity extends MapActivity {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     public static final int REQUEST_TAKE_PHOTO = 100;
-
+    public static final int REQUEST_RECORD_VIDEO = 200;
+    
     MapView mapView;
     MapController mapCtrl;
     LocationManager locationManager;
