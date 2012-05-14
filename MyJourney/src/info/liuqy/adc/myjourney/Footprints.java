@@ -1,5 +1,6 @@
 package info.liuqy.adc.myjourney;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -67,8 +68,13 @@ public class Footprints {
 
 	public long saveFootprintAt(double latitude, double longitude, FLAG flag,
 			String resource) {
-		// TODO
-		return 0L;
+        ContentValues values = new ContentValues();
+        values.put(FIELD_LATITUDE, latitude);
+        values.put(FIELD_LONGITUDE, longitude);
+        values.put(FIELD_FLAG, flag.toString());
+        values.put(FIELD_RESOURCE, resource);
+        long rowId = db.insert(TBL_NAME, null, values);
+        return rowId;
 	}
 
 }
