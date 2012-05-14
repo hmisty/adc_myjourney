@@ -5,13 +5,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -120,5 +123,30 @@ public class MyJourneyActivity extends MapActivity {
 
         return mediaFile;
     }
+
+   @Override
+   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+       if (requestCode == REQUEST_TAKE_PHOTO) {
+           if (resultCode == RESULT_OK) {
+               // Image captured and saved to fileUri specified in the Intent
+               Toast.makeText(this, "Image saved to:\n" +
+                        data.getData(), Toast.LENGTH_LONG).show();
+               Location loc = this.myLocationOverlay.getLastFix();
+               if (loc != null) {
+                   double lat0 = loc.getLatitude();
+                   double long0 = loc.getLongitude();
+                   Footprints db = new Footprints(this);
+                   db.open();
+                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, data.getData().toString());
+                   db.close();
+                   this.fpOverlay.loadSavedMarkers(mapView); //reload markers
+               }
+           } else if (resultCode == RESULT_CANCELED) {
+               //TODO User cancelled the image capture
+           } else {
+               //TODO Image capture failed, advise user
+           }
+       }
+   }
 
 }
