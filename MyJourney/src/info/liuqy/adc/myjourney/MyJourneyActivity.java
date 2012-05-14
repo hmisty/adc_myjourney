@@ -33,6 +33,8 @@ public class MyJourneyActivity extends MapActivity {
         myLocationOverlay = new MyLocationOverlay(this, mapView);
         mapOverlays.add(myLocationOverlay);
 
+        mapCtrl = mapView.getController();
+        mapCtrl.setZoom(15); //FIXME magic number
     }
 
 	@Override
