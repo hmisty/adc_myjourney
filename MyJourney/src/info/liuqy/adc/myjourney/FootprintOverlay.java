@@ -1,15 +1,20 @@
 package info.liuqy.adc.myjourney;
 
+import java.util.ArrayList;
+
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 
 public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
+    private ArrayList<OverlayItem> overlays = new ArrayList<OverlayItem>();
+    private Context context;
 
-	public FootprintOverlay(Drawable defaultMarker) {
-		super(defaultMarker);
-		// TODO Auto-generated constructor stub
+	public FootprintOverlay(Drawable defaultMarker, Context context) {
+        super(boundCenterBottom(defaultMarker)); //adjust (0,0) to center bottom
+        this.context = context;
 	}
 
 	@Override
