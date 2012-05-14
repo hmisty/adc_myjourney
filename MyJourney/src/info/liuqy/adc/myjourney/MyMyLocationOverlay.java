@@ -53,6 +53,7 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                case 2: //record a video
 		                    dialog.dismiss();
 		                    Intent intent2 = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+		                    //FIXME doesn't work on SE LT18i Android 2.3.4
 		                    Uri fileUri2 = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_VIDEO);  // create a file to save the video
 		                    intent2.putExtra(MediaStore.EXTRA_OUTPUT, fileUri2);  // set the image file name
 		                    intent2.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high

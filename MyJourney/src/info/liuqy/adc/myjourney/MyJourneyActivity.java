@@ -151,7 +151,7 @@ public class MyJourneyActivity extends MapActivity {
        
        if (requestCode == REQUEST_RECORD_VIDEO) {
            if (resultCode == RESULT_OK) {
-               // Image captured and saved to fileUri specified in the Intent
+               // Video captured and saved to fileUri specified in the Intent
                Toast.makeText(this, "Video saved to:\n" +
                         data.getData(), Toast.LENGTH_LONG).show();
                Location loc = this.myLocationOverlay.getLastFix();
