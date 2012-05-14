@@ -50,6 +50,14 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
 		                    context.startActivityForResult(intent, MyJourneyActivity.REQUEST_TAKE_PHOTO);
 		                    break;
+		                case 2: //record a video
+		                    dialog.dismiss();
+		                    Intent intent2 = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+		                    Uri fileUri2 = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_VIDEO);  // create a file to save the video
+		                    intent2.putExtra(MediaStore.EXTRA_OUTPUT, fileUri2);  // set the image file name
+		                    intent2.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+		                    context.startActivityForResult(intent2, MyJourneyActivity.REQUEST_RECORD_VIDEO);
+		                    break;
 						default:
 							Toast.makeText(
 									context,
