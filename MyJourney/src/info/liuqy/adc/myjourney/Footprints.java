@@ -56,13 +56,18 @@ public class Footprints {
 
 	public Cursor getFootprintsIn(double startLatitude, double startLongitude,
 			double endLatitude, double endLongitude) {
-		//TODO
-		return null;
+		Cursor cur = db.query(true, TBL_NAME, new String[] { FIELD_LATITUDE,
+				FIELD_LONGITUDE, FIELD_FLAG, FIELD_RESOURCE }, FIELD_LATITUDE
+				+ ">" + startLatitude + " AND " + FIELD_LATITUDE + "<"
+				+ endLatitude + " AND " + FIELD_LONGITUDE + ">"
+				+ startLongitude + " AND " + FIELD_LONGITUDE + "<"
+				+ endLongitude, null, null, null, null, null);
+		return cur;
 	}
 
 	public long saveFootprintAt(double latitude, double longitude, FLAG flag,
 			String resource) {
-		//TODO
+		// TODO
 		return 0L;
 	}
 
