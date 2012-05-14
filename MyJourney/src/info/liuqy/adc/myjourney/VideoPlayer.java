@@ -43,8 +43,8 @@ public class VideoPlayer extends Activity implements Callback,
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		// TODO Auto-generated method stub
-
+        mediaPlayer.release();
+        this.finish();
 	}
 
 	@Override
