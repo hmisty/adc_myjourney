@@ -56,8 +56,15 @@ public class VideoPlayer extends Activity implements Callback,
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
-
+        // play the video. don't try to play when onResume() which is too early.
+        try {
+            mediaPlayer.setDataSource(uriString);
+            mediaPlayer.prepare();
+        } catch (Exception e) {
+            // TODO handle various exceptions
+            e.printStackTrace();
+        }
+        mediaPlayer.start();
 	}
 
 	@Override
