@@ -45,8 +45,15 @@ public class MyJourneyActivity extends MapActivity {
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
+		
+        myLocationOverlay.enableMyLocation();
+        myLocationOverlay.enableCompass();
+        myLocationOverlay.runOnFirstFix(new Runnable() {
+            public void run() {
+                mapView.getController().animateTo(myLocationOverlay.getMyLocation());
+            }
+        });
 	}
 
 	@Override
