@@ -5,9 +5,15 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
+import android.view.SurfaceView;
 
 public class VideoPlayer extends Activity implements Callback,
 		OnCompletionListener {
+	
+    MediaPlayer mediaPlayer;
+    SurfaceView surfaceView;
+    SurfaceHolder surfaceHolder;
+    String uriString;
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
