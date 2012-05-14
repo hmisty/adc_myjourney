@@ -2,7 +2,10 @@ package info.liuqy.adc.myjourney;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Location;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import com.google.android.maps.MapView;
@@ -39,6 +42,12 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                        dialog.dismiss();
 		                        context.fpOverlay.loadSavedMarkers(mapView); //reload markers
 		                    }
+		                    break;
+		                case 1: //take a photo
+		                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		                    Uri fileUri = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_IMAGE); // create a file to save the image
+		                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+		                    context.startActivityForResult(intent, MyJourneyActivity.REQUEST_TAKE_PHOTO);
 		                    break;
 						default:
 							Toast.makeText(
