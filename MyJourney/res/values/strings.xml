@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="hello">Hello World, MyJourneyActivity!</string>
     <string name="app_name">MyJourney</string>
-
+	<string name="tap_dialog_title">Memorize the place</string>
+	
+	<string-array name="tap_dialog_choices">
+	    <item>Just Flag It!</item>
+	    <item>Take Photos</item>
+	    <item>Record Videos</item>
+	</string-array>    
+	    
 </resources>
