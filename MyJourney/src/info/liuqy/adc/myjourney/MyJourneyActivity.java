@@ -29,6 +29,10 @@ public class MyJourneyActivity extends MapActivity {
         mapView = (MapView) findViewById(R.id.mapview);
         mapView.setBuiltInZoomControls(true);
 
+        mapOverlays = mapView.getOverlays();
+        myLocationOverlay = new MyLocationOverlay(this, mapView);
+        mapOverlays.add(myLocationOverlay);
+
     }
 
 	@Override
