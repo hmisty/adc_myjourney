@@ -2,6 +2,7 @@ package info.liuqy.adc.myjourney;
 
 import java.util.ArrayList;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -61,6 +62,16 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
         db.close();
         
         populate(); //draw the overlay
+    }
+
+    @Override
+    protected boolean onTap(int index) {
+      OverlayItem item = overlays.get(index);
+      AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+      dialog.setTitle(item.getTitle());
+      dialog.setMessage(item.getSnippet());
+      dialog.show();
+      return true;
     }
 
 }
