@@ -19,14 +19,12 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
 
 	@Override
 	protected OverlayItem createItem(int i) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        return overlays.get(i);
+    }
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+        return overlays.size();
 	}
 
 }
