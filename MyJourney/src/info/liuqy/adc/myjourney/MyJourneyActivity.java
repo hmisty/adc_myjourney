@@ -37,8 +37,10 @@ public class MyJourneyActivity extends MapActivity {
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
+		
+        myLocationOverlay.disableMyLocation();
+        myLocationOverlay.disableCompass();
 	}
 
 	@Override
