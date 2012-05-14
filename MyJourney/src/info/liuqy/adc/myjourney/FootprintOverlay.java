@@ -3,9 +3,12 @@ package info.liuqy.adc.myjourney;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
+import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
 public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
@@ -26,5 +29,38 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
 	public int size() {
         return overlays.size();
 	}
+
+    public void loadSavedMarkers(MapView mapView) {
+        GeoPoint p = mapView.getMapCenter();
+        
+        int lat1 = p.getLatitudeE6() - mapView.getLatitudeSpan()/2;
+        int lat2 = p.getLatitudeE6() + mapView.getLatitudeSpan()/2;
+        int long1 = p.getLongitudeE6() - mapView.getLongitudeSpan()/2;
+        int long2 = p.getLongitudeE6() + mapView.getLongitudeSpan()/2;
+        double lat1d = (double)lat1 / 1e6;
+        double long1d = (double)long1 / 1e6;
+        double lat2d = (double)lat2 / 1e6;
+        double long2d = (double)long2 / 1e6;
+        
+        Footprints db = new Footprints(context);
+
+        db.open();
+        Cursor cur = db.getFootprintsIn(lat1d, long1d, lat2d, long2d);
+
+        while (cur.moveToNext()) {
+            double lat0 = cur.getDouble(cur.getColumnIndex(Footprints.FIELD_LATITUDE));
+            double long0 = cur.getDouble(cur.getColumnIndex(Footprints.FIELD_LONGITUDE));
+            String flag = cur.getString(cur.getColumnIndex(Footprints.FIELD_FLAG));
+            String res = cur.getString(cur.getColumnIndex(Footprints.FIELD_RESOURCE));
+            GeoPoint p0 = new GeoPoint((int)(lat0*1e6), (int)(long0*1e6));
+            OverlayItem item = new OverlayItem(p0, flag.toString(), res);
+            overlays.add(item);
+        }
+        
+        cur.close();
+        db.close();
+        
+        populate(); //draw the overlay
+    }
 
 }
