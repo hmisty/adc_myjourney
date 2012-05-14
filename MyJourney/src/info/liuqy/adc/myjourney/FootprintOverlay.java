@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 
@@ -70,6 +72,26 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
       AlertDialog.Builder dialog = new AlertDialog.Builder(context);
       dialog.setTitle(item.getTitle());
       dialog.setMessage(item.getSnippet());
+      
+      Footprints.FLAG flag = Footprints.FLAG.valueOf(item.getTitle());
+      if (flag == Footprints.FLAG.V) {
+          final String uriString = item.getSnippet();
+          dialog.setMessage(uriString + " is a video. Play it?")
+          .setCancelable(false)
+          .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+               public void onClick(DialogInterface dialog, int id) {
+                   Intent i = new Intent(context, VideoPlayer.class);
+                   i.putExtra("uri", uriString);
+                   context.startActivity(i);
+               }
+           })
+           .setNegativeButton("No", new DialogInterface.OnClickListener() {
+               public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+               }
+           });
+      }
+
       dialog.show();
       return true;
     }
