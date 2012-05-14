@@ -20,6 +20,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
@@ -193,10 +194,32 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
 
 	}
 
+    private static final int SHIFT_LAT = 100000, SHIFT_LONG = 100000;
+    
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		// TODO Auto-generated method stub
-
+		if (event.sensor.equals(accelerometer)) {
+			float accX = event.values[0];
+			float accY = event.values[1];
+			GeoPoint p = mapView.getMapCenter();
+			GeoPoint p1, p2;
+			float accThreshold = 1.0f;
+			if (accX > accThreshold) { // lean left
+				p1 = new GeoPoint(p.getLatitudeE6(), p.getLongitudeE6()	- SHIFT_LONG);
+			} else if (accX < -accThreshold) { // lean right
+				p1 = new GeoPoint(p.getLatitudeE6(), p.getLongitudeE6()	+ SHIFT_LONG);
+			} else {
+				p1 = p;
+			}
+			if (accY > accThreshold) { // roll backward
+				p2 = new GeoPoint(p1.getLatitudeE6() - SHIFT_LAT, p1.getLongitudeE6());
+			} else if (accY < -accThreshold) { // roll forward
+				p2 = new GeoPoint(p1.getLatitudeE6() + SHIFT_LAT, p1.getLongitudeE6());
+			} else {
+				p2 = p1;
+			}
+			mapCtrl.animateTo(p2);
+		}
 	}
 
 }
