@@ -7,10 +7,6 @@ import java.util.List;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -27,7 +23,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 
-public class MyJourneyActivity extends MapActivity implements SensorEventListener {
+public class MyJourneyActivity extends MapActivity {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     public static final int REQUEST_TAKE_PHOTO = 100;
@@ -40,19 +36,13 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
     List<Overlay> mapOverlays;
     MyLocationOverlay myLocationOverlay;
     FootprintOverlay fpOverlay;
-    
-    SensorManager sensorMgr;
-    Sensor accelerometer;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
-        sensorMgr = (SensorManager)getSystemService(SENSOR_SERVICE);
-        accelerometer = sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        
+
         mapView = (MapView) findViewById(R.id.mapview);
         mapView.setBuiltInZoomControls(true);
 
@@ -75,8 +65,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
 		
         myLocationOverlay.disableMyLocation();
         myLocationOverlay.disableCompass();
-        
-        sensorMgr.unregisterListener(this);
+
 	}
 
 	@Override
@@ -92,8 +81,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                 fpOverlay.loadSavedMarkers(mapView);
             }
         });
-        
-        sensorMgr.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
 	}
 
 	@Override
@@ -187,39 +175,5 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
        }
 
    }
-
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-
-	}
-
-    private static final int SHIFT_LAT = 100000, SHIFT_LONG = 100000;
-    
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		if (event.sensor.equals(accelerometer)) {
-			float accX = event.values[0];
-			float accY = event.values[1];
-			GeoPoint p = mapView.getMapCenter();
-			GeoPoint p1, p2;
-			float accThreshold = 1.0f;
-			if (accX > accThreshold) { // lean left
-				p1 = new GeoPoint(p.getLatitudeE6(), p.getLongitudeE6()	- SHIFT_LONG);
-			} else if (accX < -accThreshold) { // lean right
-				p1 = new GeoPoint(p.getLatitudeE6(), p.getLongitudeE6()	+ SHIFT_LONG);
-			} else {
-				p1 = p;
-			}
-			if (accY > accThreshold) { // roll backward
-				p2 = new GeoPoint(p1.getLatitudeE6() - SHIFT_LAT, p1.getLongitudeE6());
-			} else if (accY < -accThreshold) { // roll forward
-				p2 = new GeoPoint(p1.getLatitudeE6() + SHIFT_LAT, p1.getLongitudeE6());
-			} else {
-				p2 = p1;
-			}
-			mapCtrl.animateTo(p2);
-		}
-	}
 
 }
