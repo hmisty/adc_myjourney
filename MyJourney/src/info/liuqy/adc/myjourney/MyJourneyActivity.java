@@ -7,6 +7,10 @@ import java.util.List;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -23,7 +27,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 
-public class MyJourneyActivity extends MapActivity {
+public class MyJourneyActivity extends MapActivity implements SensorEventListener {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     public static final int REQUEST_TAKE_PHOTO = 100;
@@ -37,11 +41,21 @@ public class MyJourneyActivity extends MapActivity {
     MyLocationOverlay myLocationOverlay;
     FootprintOverlay fpOverlay;
 
+    // For shake motion detection.
+    private SensorManager sensorMgr;
+    private Sensor accelerometer;
+    private long lastUpdate = -1;
+    private float last_x, last_y, last_z;
+    private static final int SHAKE_THRESHOLD = 800;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        sensorMgr = (SensorManager)getSystemService(SENSOR_SERVICE);
+        accelerometer = sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         mapView = (MapView) findViewById(R.id.mapview);
         mapView.setBuiltInZoomControls(true);
@@ -66,6 +80,7 @@ public class MyJourneyActivity extends MapActivity {
         myLocationOverlay.disableMyLocation();
         myLocationOverlay.disableCompass();
 
+        sensorMgr.unregisterListener(this);
 	}
 
 	@Override
@@ -82,6 +97,7 @@ public class MyJourneyActivity extends MapActivity {
             }
         });
 
+        sensorMgr.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
@@ -131,24 +147,28 @@ public class MyJourneyActivity extends MapActivity {
    @Override
    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
        if (requestCode == REQUEST_TAKE_PHOTO) {
-           if (resultCode == RESULT_OK) {
-               // Image captured and saved to fileUri specified in the Intent
-               Toast.makeText(this, "Image saved to:\n" +
-                        data.getData(), Toast.LENGTH_LONG).show();
-               Location loc = this.myLocationOverlay.getLastFix();
-               if (loc != null) {
-                   double lat0 = loc.getLatitude();
-                   double long0 = loc.getLongitude();
-                   Footprints db = new Footprints(this);
-                   db.open();
-                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, data.getData().toString());
-                   db.close();
-                   this.fpOverlay.loadSavedMarkers(mapView); //reload markers
+           if (data == null){
+
+           }else {
+               if (resultCode == RESULT_OK) {
+                   // Image captured and saved to fileUri specified in the Intent
+                   Toast.makeText(this, "Image saved to:\n" +
+                            data.getData(), Toast.LENGTH_LONG).show();
+                   Location loc = this.myLocationOverlay.getLastFix();
+                   if (loc != null) {
+                       double lat0 = loc.getLatitude();
+                       double long0 = loc.getLongitude();
+                       Footprints db = new Footprints(this);
+                       db.open();
+                       db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, data.getData().toString());
+                       db.close();
+                       this.fpOverlay.loadSavedMarkers(mapView); //reload markers
+                   }
+               } else if (resultCode == RESULT_CANCELED) {
+                   //TODO User cancelled the image capture
+               } else {
+                   //TODO Image capture failed, advise user
                }
-           } else if (resultCode == RESULT_CANCELED) {
-               //TODO User cancelled the image capture
-           } else {
-               //TODO Image capture failed, advise user
            }
        }
        
@@ -176,4 +196,39 @@ public class MyJourneyActivity extends MapActivity {
 
    }
 
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+
+	}
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.equals(accelerometer)) {
+            long curTime = System.currentTimeMillis();
+            // only allow one update every 100ms.
+            if ((curTime - lastUpdate)>100) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                float x = event.values[SensorManager.DATA_X];
+                float y = event.values[SensorManager.DATA_Y];
+                float z = event.values[SensorManager.DATA_Z];
+
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z)
+                        / diffTime * 10000;
+                if (speed > SHAKE_THRESHOLD) {
+                    // yes, this is a shake action! Do something about it!
+                    Log.v("@@","this is a shake action");
+                    mapCtrl.animateTo(myLocationOverlay.getMyLocation());
+                    mapCtrl.setZoom(15); //FIXME magic number
+                    fpOverlay.loadSavedMarkers(mapView);
+
+                }
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
 }
