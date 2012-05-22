@@ -70,27 +70,43 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
     protected boolean onTap(int index) {
       OverlayItem item = overlays.get(index);
       AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-      dialog.setTitle(item.getTitle());
-      dialog.setMessage(item.getSnippet());
+      dialog.setTitle(item.getTitle()+"[title]");
+      dialog.setMessage(item.getSnippet()+"[Snippet]");
       
       Footprints.FLAG flag = Footprints.FLAG.valueOf(item.getTitle());
-      if (flag == Footprints.FLAG.V) {
-          final String uriString = item.getSnippet();
-          dialog.setMessage(uriString + " is a video. Play it?")
-          .setCancelable(false)
-          .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-               public void onClick(DialogInterface dialog, int id) {
-                   Intent i = new Intent(context, VideoPlayer.class);
-                   i.putExtra("uri", uriString);
-                   context.startActivity(i);
-               }
-           })
-           .setNegativeButton("No", new DialogInterface.OnClickListener() {
-               public void onClick(DialogInterface dialog, int id) {
-                    dialog.cancel();
-               }
-           });
-      }
+        if (flag == Footprints.FLAG.F) {
+            final String uriString = item.getSnippet();
+            dialog.setMessage(uriString + " is a Photo. Show it?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent i = new Intent(context, PhotoViewer.class);
+                            i.putExtra("uri", uriString);
+                            context.startActivity(i);
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+        }else if (flag == Footprints.FLAG.V) {
+            final String uriString = item.getSnippet();
+            dialog.setMessage(uriString + " is a video. Play it?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent i = new Intent(context, VideoPlayer.class);
+                            i.putExtra("uri", uriString);
+                            context.startActivity(i);
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+        }
 
       dialog.show();
       return true;
