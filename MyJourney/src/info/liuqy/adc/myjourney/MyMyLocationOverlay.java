@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.maps.MapView;
@@ -48,6 +49,7 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		                    Uri fileUri = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_IMAGE); // create a file to save the image
 		                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+                            Log.v("take a photo", fileUri.toString());
 		                    context.startActivityForResult(intent, MyJourneyActivity.REQUEST_TAKE_PHOTO);
 		                    break;
 		                case 2: //record a video
@@ -57,6 +59,7 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                    Uri fileUri2 = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_VIDEO);  // create a file to save the video
 		                    intent2.putExtra(MediaStore.EXTRA_OUTPUT, fileUri2);  // set the image file name
 		                    intent2.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+                            Log.v("record a video", fileUri2.toString());
 		                    context.startActivityForResult(intent2, MyJourneyActivity.REQUEST_RECORD_VIDEO);
 		                    break;
 						default:

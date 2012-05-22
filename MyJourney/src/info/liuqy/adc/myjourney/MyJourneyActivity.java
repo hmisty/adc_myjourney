@@ -147,34 +147,35 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
    @Override
    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
        if (requestCode == REQUEST_TAKE_PHOTO) {
-           if (data == null){
+           if (resultCode == RESULT_OK) {
+               Log.v("Intent data",data.toString());
+               // Image captured and saved to fileUri specified in the Intent
+               Toast.makeText(this, "Image saved to:\n" +
+                       data.getData() +"\nE:\n"+ data.getExtras(), Toast.LENGTH_LONG).show();
 
-           }else {
-               if (resultCode == RESULT_OK) {
-                   // Image captured and saved to fileUri specified in the Intent
-                   Toast.makeText(this, "Image saved to:\n" +
-                            data.getData(), Toast.LENGTH_LONG).show();
-                   Location loc = this.myLocationOverlay.getLastFix();
-                   if (loc != null) {
-                       double lat0 = loc.getLatitude();
-                       double long0 = loc.getLongitude();
-                       Footprints db = new Footprints(this);
-                       db.open();
-                       db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, data.getData().toString());
-                       db.close();
-                       this.fpOverlay.loadSavedMarkers(mapView); //reload markers
-                   }
-               } else if (resultCode == RESULT_CANCELED) {
-                   //TODO User cancelled the image capture
-               } else {
-                   //TODO Image capture failed, advise user
+               /*
+               Location loc = this.myLocationOverlay.getLastFix();
+               if (loc != null) {
+                   double lat0 = loc.getLatitude();
+                   double long0 = loc.getLongitude();
+                   Footprints db = new Footprints(this);
+                   db.open();
+                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, data.getData().toString());
+                   db.close();
+                   this.fpOverlay.loadSavedMarkers(mapView); //reload markers
                }
+               */
+           } else if (resultCode == RESULT_CANCELED) {
+               //TODO User cancelled the image capture
+           } else {
+               //TODO Image capture failed, advise user
            }
        }
        
        if (requestCode == REQUEST_RECORD_VIDEO) {
            if (resultCode == RESULT_OK) {
                // Video captured and saved to fileUri specified in the Intent
+               Log.v("Intent data",data.toString());
                Toast.makeText(this, "Video saved to:\n" +
                         data.getData(), Toast.LENGTH_LONG).show();
                Location loc = this.myLocationOverlay.getLastFix();
@@ -219,10 +220,13 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                         / diffTime * 10000;
                 if (speed > SHAKE_THRESHOLD) {
                     // yes, this is a shake action! Do something about it!
-                    Log.v("@@","this is a shake action");
-                    mapCtrl.animateTo(myLocationOverlay.getMyLocation());
-                    mapCtrl.setZoom(15); //FIXME magic number
-                    fpOverlay.loadSavedMarkers(mapView);
+                    Toast.makeText(this,"this is a shake action",Toast.LENGTH_SHORT).show();
+                    if (myLocationOverlay!=null && myLocationOverlay.getMyLocation()!=null)
+                    {
+                        mapCtrl.animateTo(myLocationOverlay.getMyLocation());
+                        mapCtrl.setZoom(15); //FIXME magic number
+                        fpOverlay.loadSavedMarkers(mapView);
+                    }
 
                 }
                 last_x = x;
