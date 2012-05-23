@@ -5,12 +5,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,12 +22,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapActivity;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
-import com.google.android.maps.MyLocationOverlay;
-import com.google.android.maps.Overlay;
+import com.google.android.maps.*;
 
 public class MyJourneyActivity extends MapActivity implements SensorEventListener {
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -33,12 +30,13 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
     public static final int REQUEST_TAKE_PHOTO = 100;
     public static final int REQUEST_RECORD_VIDEO = 200;
 
-    SimpleMapView mapView;
-    MapController mapCtrl;
-    LocationManager locationManager;
-    LocationListener locationListener;
-    List<Overlay> mapOverlays;
-    MyLocationOverlay myLocationOverlay;
+    private SimpleMapView mapView;
+    private MapController mapCtrl;
+    private LocationManager locationManager;
+    private List<Overlay> mapOverlays;
+    private MyLocationOverlay myLocationOverlay;
+    private Location lastLocation;
+    Projection projection;
     FootprintOverlay fpOverlay;
     Uri mCapturedImageURI;
 
@@ -48,6 +46,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
     private long lastUpdate = -1;
     private float last_x, last_y, last_z;
     private static final int SHAKE_THRESHOLD = 800;
+
 
     /** Called when the activity is first created. */
     @Override
@@ -72,6 +71,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
         mapOverlays.add(myLocationOverlay);
 
         mapCtrl = mapView.getController();
+        projection = mapView.getProjection();
 
         mapView.addPanChangeListener(new PanChangeListener() {
 
@@ -80,9 +80,61 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                 fpOverlay.loadSavedMarkers(mapView);
             }
         });
+
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAltitudeRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setCostAllowed(true);
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        String provider = locationManager.getBestProvider(criteria, true);
+
+        Location location = locationManager.getLastKnownLocation(provider);
+        updateWithNewLocation(location);
+
+        locationManager.requestLocationUpdates(provider, 100, 0, locationListener);
+
     }
 
-	@Override
+    private final LocationListener locationListener = new LocationListener()
+    {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            Toast.makeText(MyJourneyActivity.this, "onLocationChanged:" + location, Toast.LENGTH_SHORT);
+            updateWithNewLocation(location);
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            updateWithNewLocation(null);
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+    };
+
+    private void updateWithNewLocation(Location location) {
+        if (lastLocation != null) {
+            float distance = lastLocation.distanceTo(location);
+            if (distance > 500){
+                addFootprint(location, Footprints.FLAG.F, null);
+                lastLocation = location;
+            }
+
+        } else {
+            lastLocation = location;
+        }
+    }
+
+    @Override
 	protected void onPause() {
 		super.onPause();
 		
@@ -111,7 +163,6 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
 
 	@Override
 	protected boolean isRouteDisplayed() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
@@ -161,7 +212,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                if(data == null) {
                    uri = mCapturedImageURI.toString();
                } else {
-                   uri = data.getData().toString();
+                   uri = data.getDataString();
                }
                // Image captured and saved to fileUri specified in the Intent
                Toast.makeText(this, "Image saved to:\n" +
@@ -170,12 +221,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
 
                Location loc = this.myLocationOverlay.getLastFix();
                if (loc != null) {
-                   double lat0 = loc.getLatitude();
-                   double long0 = loc.getLongitude();
-                   Footprints db = new Footprints(this);
-                   db.open();
-                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, uri);
-                   db.close();
+                   addFootprint(loc, Footprints.FLAG.P, uri);
                    this.fpOverlay.loadSavedMarkers(mapView); //reload markers
                }
 
@@ -192,14 +238,10 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                Log.v("Intent data",data.toString());
                Toast.makeText(this, "Video saved to:\n" +
                         data.getData(), Toast.LENGTH_LONG).show();
+               String uri = data.getDataString();
                Location loc = this.myLocationOverlay.getLastFix();
                if (loc != null) {
-                   double lat0 = loc.getLatitude();
-                   double long0 = loc.getLongitude();
-                   Footprints db = new Footprints(this);
-                   db.open();
-                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.V, data.getData().toString());
-                   db.close();
+                   addFootprint(loc, Footprints.FLAG.V, uri);
                    this.fpOverlay.loadSavedMarkers(mapView); //reload markers
                }
            } else if (resultCode == RESULT_CANCELED) {
@@ -211,7 +253,16 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
 
    }
 
-	@Override
+    public void addFootprint(Location loc, Footprints.FLAG flag, String uri) {
+        double lat0 = loc.getLatitude();
+        double long0 = loc.getLongitude();
+        Footprints db = new Footprints(this);
+        db.open();
+        db.saveFootprintAt(lat0, long0, flag, uri);
+        db.close();
+    }
+
+    @Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub
 
@@ -238,7 +289,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
                     if (myLocationOverlay!=null && myLocationOverlay.getMyLocation()!=null)
                     {
                         mapCtrl.animateTo(myLocationOverlay.getMyLocation());
-                        mapCtrl.setZoom(15); //FIXME magic number
+                        mapCtrl.setZoom(15);
                         fpOverlay.loadSavedMarkers(mapView);
                     }
 

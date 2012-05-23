@@ -1,26 +1,42 @@
 package info.liuqy.adc.myjourney;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DataSetObserver;
+import android.graphics.*;
 import android.graphics.drawable.Drawable;
 
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.MapView;
-import com.google.android.maps.OverlayItem;
+import android.location.Location;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
+import com.google.android.maps.*;
+
+import static com.google.android.maps.OverlayItem.ITEM_STATE_FOCUSED_MASK;
 
 public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
     private ArrayList<OverlayItem> overlays = new ArrayList<OverlayItem>();
+    private ArrayList<OverlayItem> overlaysSelected = new ArrayList<OverlayItem>();
     private Context context;
+    private Drawable defaultMarker;
 
-	public FootprintOverlay(Drawable defaultMarker, Context context) {
+    public FootprintOverlay(Drawable defaultMarker, Context context) {
         super(boundCenterBottom(defaultMarker)); //adjust (0,0) to center bottom
         this.context = context;
+        this.defaultMarker = defaultMarker;
 	}
 
 	@Override
@@ -67,13 +83,63 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
     }
 
     @Override
+    public boolean onTap(GeoPoint geoPoint, MapView mapView) {
+        Point ptTap = mapView.getProjection().toPixels(geoPoint, null);
+        overlaysSelected.clear();
+        for(OverlayItem item : overlays) {
+            Point itemPoint = mapView.getProjection().toPixels(item.getPoint(), null);
+            int relativeX = ptTap.x - itemPoint.x;
+            int relativeY = ptTap.y - itemPoint.y;
+            Drawable marker = item.getMarker(ITEM_STATE_FOCUSED_MASK);
+            if(marker == null) {
+                marker = this.defaultMarker;
+            }
+            if(hitTest(item, marker, relativeX, relativeY)){
+                overlaysSelected.add(item);
+            }
+        }
+        if(overlaysSelected.size()>1){
+            Toast.makeText(this.context, "overlaysSelected:"+overlaysSelected.size(), Toast.LENGTH_SHORT).show();
+            showTapList();
+            return true;
+        }else {
+            return super.onTap(geoPoint, mapView);
+        }
+    }
+
+    private  void  showTapList(){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        dialog.setTitle(R.string.tap_dialog_title);
+        ArrayList<String> tapItems = new ArrayList<String>();
+        for(OverlayItem item : overlaysSelected) {
+            tapItems.add(item.getTitle());
+        }
+
+        dialog.setSingleChoiceItems(tapItems.toArray(new CharSequence[tapItems.size()]),
+                -1,
+                new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                 // dialogInterface.dismiss();
+                onTapItem(overlaysSelected.get(i));
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
     protected boolean onTap(int index) {
-      OverlayItem item = overlays.get(index);
-      AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-      dialog.setTitle(item.getTitle());
-      dialog.setMessage(item.getSnippet());
-      
-      Footprints.FLAG flag = Footprints.FLAG.valueOf(item.getTitle());
+        OverlayItem item = overlays.get(index);
+        onTapItem(item);
+        return true;
+    }
+
+    private void onTapItem(OverlayItem item) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        dialog.setTitle(item.getTitle());
+        dialog.setMessage(item.getSnippet());
+
+        Footprints.FLAG flag = Footprints.FLAG.valueOf(item.getTitle());
         if (flag == Footprints.FLAG.P) {
             final String uriString = item.getSnippet();
             dialog.setMessage(uriString + " is a Photo. Show it?")
@@ -108,8 +174,40 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
                     });
         }
 
-      dialog.show();
-      return true;
+        dialog.show();
     }
 
+
+    @Override
+    public boolean draw(Canvas canvas, MapView mapView, boolean b, long l) {
+
+        if(overlays !=null && overlays.size()>1){
+            Paint   mPaint = new Paint();
+            mPaint.setDither(true);
+            mPaint.setColor(Color.BLUE);
+            mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
+            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPaint.setStrokeWidth(4);
+
+            Projection projection = ((MyJourneyActivity)this.context).projection;
+
+            Path path = new Path();
+            boolean bMoveTo = true;
+            for(OverlayItem item : overlays) {
+                Point point = new Point();
+                GeoPoint geoPoint = item.getPoint();
+                projection.toPixels(geoPoint, point);
+                if(bMoveTo){
+                    path.moveTo(point.x, point.y);
+                    bMoveTo = false;
+                } else {
+                    path.lineTo(point.x, point.y);
+                }
+            }
+            canvas.drawPath(path, mPaint);
+        }
+
+        return super.draw(canvas, mapView, b, l);    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }

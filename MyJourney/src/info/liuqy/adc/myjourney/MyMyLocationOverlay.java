@@ -35,12 +35,7 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                case 0: //just flag it
 		                    Location loc = MyMyLocationOverlay.this.getLastFix();
 		                    if (loc != null) {
-		                        double lat0 = loc.getLatitude();
-		                        double long0 = loc.getLongitude();
-		                        Footprints db = new Footprints(context);
-		                        db.open();
-		                        db.saveFootprintAt(lat0, long0, Footprints.FLAG.F, null);
-		                        db.close();
+                                context.addFootprint(loc, Footprints.FLAG.F, null);
 		                        dialog.dismiss();
 		                        context.fpOverlay.loadSavedMarkers(mapView); //reload markers
 		                    }
