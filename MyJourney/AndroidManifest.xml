@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".VideoPlayer"></activity>
+        <activity android:name=".PhotoViewer"/>
         <uses-library android:name="com.google.android.maps" />
     </application>
 
