@@ -70,11 +70,11 @@ public class FootprintOverlay extends ItemizedOverlay<OverlayItem> {
     protected boolean onTap(int index) {
       OverlayItem item = overlays.get(index);
       AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-      dialog.setTitle(item.getTitle()+"[title]");
-      dialog.setMessage(item.getSnippet()+"[Snippet]");
+      dialog.setTitle(item.getTitle());
+      dialog.setMessage(item.getSnippet());
       
       Footprints.FLAG flag = Footprints.FLAG.valueOf(item.getTitle());
-        if (flag == Footprints.FLAG.F) {
+        if (flag == Footprints.FLAG.P) {
             final String uriString = item.getSnippet();
             dialog.setMessage(uriString + " is a Photo. Show it?")
                     .setCancelable(false)

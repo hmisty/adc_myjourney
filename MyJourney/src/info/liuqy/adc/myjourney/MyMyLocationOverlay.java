@@ -1,6 +1,7 @@
 package info.liuqy.adc.myjourney;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
@@ -46,10 +47,18 @@ public class MyMyLocationOverlay extends MyLocationOverlay {
 		                    break;
 		                case 1: //take a photo
 		                	dialog.dismiss();
+                            // Setting parameters to camera intent
+                            String fileName = String.valueOf(System.currentTimeMillis()) + ".jpg";
+
+                            ContentValues values = new ContentValues();
+                            values.put(MediaStore.Images.Media.TITLE, fileName);
+                            context.mCapturedImageURI =context.getContentResolver().insert(
+                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
 		                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-		                    Uri fileUri = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_IMAGE); // create a file to save the image
-		                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
-                            Log.v("take a photo", fileUri.toString());
+		                    //Uri fileUri = MyJourneyActivity.getOutputMediaFileUri(MyJourneyActivity.MEDIA_TYPE_IMAGE); // create a file to save the image
+		                    intent.putExtra(MediaStore.EXTRA_OUTPUT, context.mCapturedImageURI); // set the image file name
+                            Log.v("take a photo", context.mCapturedImageURI.toString());
 		                    context.startActivityForResult(intent, MyJourneyActivity.REQUEST_TAKE_PHOTO);
 		                    break;
 		                case 2: //record a video

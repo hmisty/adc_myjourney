@@ -32,14 +32,15 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
     public static final int MEDIA_TYPE_VIDEO = 2;
     public static final int REQUEST_TAKE_PHOTO = 100;
     public static final int REQUEST_RECORD_VIDEO = 200;
-    
-    MapView mapView;
+
+    SimpleMapView mapView;
     MapController mapCtrl;
     LocationManager locationManager;
     LocationListener locationListener;
     List<Overlay> mapOverlays;
     MyLocationOverlay myLocationOverlay;
     FootprintOverlay fpOverlay;
+    Uri mCapturedImageURI;
 
     // For shake motion detection.
     private SensorManager sensorMgr;
@@ -57,7 +58,7 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
         sensorMgr = (SensorManager)getSystemService(SENSOR_SERVICE);
         accelerometer = sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        mapView = (MapView) findViewById(R.id.mapview);
+        mapView = (SimpleMapView) findViewById(R.id.mapview);
         mapView.setBuiltInZoomControls(true);
 
         mapOverlays = mapView.getOverlays();
@@ -71,6 +72,14 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
         mapOverlays.add(myLocationOverlay);
 
         mapCtrl = mapView.getController();
+
+        mapView.addPanChangeListener(new PanChangeListener() {
+
+            @Override
+            public void onPan(GeoPoint old, GeoPoint current) {
+                fpOverlay.loadSavedMarkers(mapView);
+            }
+        });
     }
 
 	@Override
@@ -116,8 +125,8 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                  Environment.DIRECTORY_PICTURES), "MyJourney");
+       File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+               Environment.DIRECTORY_PICTURES), "MyJourney");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
         // Create the storage directory if it does not exist
@@ -148,23 +157,28 @@ public class MyJourneyActivity extends MapActivity implements SensorEventListene
    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
        if (requestCode == REQUEST_TAKE_PHOTO) {
            if (resultCode == RESULT_OK) {
-               Log.v("Intent data",data.toString());
+               String uri = null;
+               if(data == null) {
+                   uri = mCapturedImageURI.toString();
+               } else {
+                   uri = data.getData().toString();
+               }
                // Image captured and saved to fileUri specified in the Intent
                Toast.makeText(this, "Image saved to:\n" +
-                       data.getData() +"\nE:\n"+ data.getExtras(), Toast.LENGTH_LONG).show();
+                       uri, Toast.LENGTH_LONG).show();
 
-               /*
+
                Location loc = this.myLocationOverlay.getLastFix();
                if (loc != null) {
                    double lat0 = loc.getLatitude();
                    double long0 = loc.getLongitude();
                    Footprints db = new Footprints(this);
                    db.open();
-                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, data.getData().toString());
+                   db.saveFootprintAt(lat0, long0, Footprints.FLAG.P, uri);
                    db.close();
                    this.fpOverlay.loadSavedMarkers(mapView); //reload markers
                }
-               */
+
            } else if (resultCode == RESULT_CANCELED) {
                //TODO User cancelled the image capture
            } else {
